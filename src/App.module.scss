@@ -1,0 +1,178 @@
+.app {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  &__wrap {
+    border: 10px solid #706f6f;
+    background-color: #a7a5a5;
+    margin: auto;
+  }
+  &__head {
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: auto;
+    height: 60px;
+    background-color: #a7a5a5;
+  }
+  &__divider {
+    width: 100%;
+    height: 20px;
+    background-color: #706f6f;
+  }
+  &__timer {
+      display: flex;
+      width: 66px;
+      height: 39px;
+  }
+  &__minesLeft {
+    display: flex;
+    width: 66px;
+    height: 39px;
+  }
+  &__mineNumber {
+    width: 30%;
+    height: 100%;
+    background-image: url('./assets/minesweeper-sprites.png');
+    background-position-y: 0;
+    &_zero {
+      background-position-x: 21px;
+    }
+    &_one {
+      background-position-x: -3px;
+    }
+    &_two {
+      background-position-x: -25px;
+    }
+    &_three {
+      background-position-x: -48px;
+    }
+    &_four {
+      background-position-x: -71px;
+    }
+    &_five {
+      background-position-x: -94px;
+    }
+    &_six {
+      background-position-x: -118px;
+    }
+    &_seven {
+      background-position-x: -141px;
+    }
+    &_eight {
+      background-position-x: -165px;
+    }
+    &_nine {
+      background-position-x: -189px;
+    }
+  }
+  &__startGame {
+    width: 44px;
+    height: 44px;
+    & button {
+      width: 100%;
+      height: 100%;
+    }
+  }
+  &__emoji {
+    width: 100%;
+    height: 100%;
+    background-image: url('./assets/minesweeper-sprites.png');
+    background-position-y: -43px;
+    &_happy {
+      background-position-x: -3px;
+    }
+    &_scared {
+      background-position-x: -94px;
+    }
+    &_sad {
+      background-position-x: 50px;
+    }
+    &_win {
+      background-position-x: 95px;
+    }
+  }
+}
+
+.field__wrap {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.row {
+  display: flex;
+}
+
+.cell {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 25px;
+  height: 25px;
+  margin: 3px;
+  background-image: url('./assets/minesweeper-sprites.png');
+  background-position: -27px -86px;
+  font-size: 12px;
+  line-height: 100%;
+  cursor: pointer;
+  &_filled {
+    width: 100%;
+    height: 100%;
+    background-image: url('./assets/minesweeper-sprites.png');
+    background-position: 0px -86px;
+  }
+}
+
+.bomb {
+  width: 100%;
+  height: 100%;
+  background-image: url('./assets/minesweeper-sprites.png');
+  background-position: -379px -86px;
+}
+
+.flag {
+  width: 100%;
+  height: 100%;
+  background-image: url('./assets/minesweeper-sprites.png');
+  background-position: -292px -87px;
+}
+
+.question {
+  width: 100%;
+  height: 100%;
+  background-image: url('./assets/minesweeper-sprites.png');
+  background-position: -350px -87px;
+}
+
+.bombsNearby {
+  width: 100%;
+  height: 100%;
+  background-image: url('./assets/minesweeper-sprites.png');
+  background-position-y: -116px;
+  &_one {
+    background-position-x:  -2px;
+  }
+  &_two {
+    background-position-x:  -29px;
+  }
+  &_three {
+    background-position-x:  -59px;
+  }
+  &_four {
+    background-position-x:  -89px;
+  }
+  &_five {
+    background-position-x:  -115px;
+  }
+  &_six {
+    background-position-x:  -143px;
+  }
+  &_seven {
+    background-position-x:  -171px;
+  }
+  &_eight {
+    background-position-x:  -199px;
+  }
+}
