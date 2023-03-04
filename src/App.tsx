@@ -114,16 +114,12 @@ function App() {
 	const [field, setField] = useState<number[]>(() => createField(size));
 	const [mask, setMask] = useState<Mask[]>(() => new Array(size * size).fill(Mask.Fill));
 	const [loss, setLoss] = useState(false);
-	const [minesLeft, setMinesLeft] = useState(40);
+	const [minesLeft, setMinesLeft] = useState(40); 
 	const [secondsFromStart, setSecondsFromStart] = useState(0);
 	const [hasGameStarted, setHasGameStarted] = useState(false);
 	const [emojiStatus, setEmojiStatus] = useState<"happy" | "scared" | "sad" | "win">('happy');
 	
-	const win = useMemo(() => !field.some(
-		(f, i) => (f === BOMB && mask[i] !== Mask.Flag) 
-			&& mask[i] !== Mask.Transparent
-		), 
-		[field, mask]);
+	const isWin = useMemo(() => field.every((f, i) => (f === BOMB && mask[i] === Mask.Flag) || mask[i] === Mask.Transparent), [field, mask]);
 
 	const createFieldContent = (index: number) => {
 		if(mask[index] !== Mask.Transparent) {
@@ -136,8 +132,9 @@ function App() {
 		return bombsNearbyToView[field[index]];
 	};
 
+	//* Left click functionality
 	const handleClick = (x: number, y: number) => {
-		if (win || loss) {
+		if (isWin || loss || !hasGameStarted) {
 			return;
 		}
 
@@ -173,8 +170,9 @@ function App() {
 		}
 
 		if(field[y * size + x] === BOMB) {
-			mask.forEach((_, i) => mask[i] = Mask.Transparent);
+			setMask(prev => prev.map((m, i) => field[i] === BOMB ? Mask.Transparent : m));
 			setLoss(true);
+			return;
 		}
 
 		setMask(prev => {
@@ -188,7 +186,7 @@ function App() {
 	const handleRightClick = (x: number, y: number) => {	
 		const index = y * size + x;
 
-		if(win || loss) {
+		if(isWin || loss || !hasGameStarted) {
 			return;
 		}
 
@@ -196,6 +194,9 @@ function App() {
 			return;
 		}
 		if (mask[index] === Mask.Fill) {
+			if (field[y * size * x] === BOMB) {
+				setMinesLeft(prev => prev - 1);
+			}
 			setMask(prev => {
 				const newMask = [...prev];
 				newMask[y * size + x] = Mask.Flag;
@@ -207,6 +208,9 @@ function App() {
 				newMask[y * size + x] = Mask.Question;
 				return newMask;
 			});
+			if (field[y * size * x] === BOMB) {
+				setMinesLeft(prev => prev + 1);
+			}
 		} else if(mask[index] === Mask.Question) {
 			setMask(prev => {
 				const newMask = [...prev];
@@ -218,28 +222,36 @@ function App() {
 
 	//* Timer functionality
 	useEffect(() => {
-		let timer: any;
+		let timer: ReturnType<typeof setInterval>;
 		if(hasGameStarted) {
-			timer = setInterval(() => {
-				setSecondsFromStart(prev => prev += 1);
-			}, 1000);
-		} else if(loss || win) {
+			timer = setInterval(() => setSecondsFromStart(prev => prev + 1), 1000);
+		}
+		if(isWin || loss) {
+			setHasGameStarted(false);
 			return () => clearInterval(timer);
-		} else {
+		} else if(!hasGameStarted) {
 			setSecondsFromStart(0);
 			return () => clearInterval(timer);
 		}
 		return () => clearInterval(timer);
-	}, [hasGameStarted]);
+	}, [hasGameStarted, loss, isWin]);
+
+	useEffect(() => {		
+		if(isWin) {
+			setEmojiStatus('win');
+		} else if(loss) {
+			setEmojiStatus('sad');
+		}
+	}, [isWin, loss]);
 
 	//* Displaying emojis
 	const displayEmoji = () => {
 		if(emojiStatus === 'sad') {
 			return (<div className={`${s['app__emoji']} ${s['app__emoji_sad']}`}></div>);
+		} else if (emojiStatus === 'win') {
+			return (<div className={`${s['app__emoji']} ${s['app__emoji_win']}`}></div>);
 		} else if(emojiStatus === 'scared') {
 			return (<div className={`${s['app__emoji']} ${s['app__emoji_scared']}`}></div>);
-		} else if(emojiStatus === 'win') {
-			return (<div className={`${s['app__emoji']} ${s['app__emoji_win']}`}></div>);
 		} else {
 			return (<div className={`${s['app__emoji']} ${s['app__emoji_happy']}`}></div>);
 		}
@@ -247,8 +259,14 @@ function App() {
 
 	//* Rest functionality
 	const onResetGame = () => {
-		setField(() => createField(16));
-		setMask(prev => prev.map(_ => Mask.Fill));
+		setField(() => createField(size));
+		setMask(prev => prev.map(() => Mask.Fill));
+		if(loss) {
+			setLoss(false);
+		}
+		if(minesLeft !== 40) {
+			setMinesLeft(40);
+		}
 	};
 	
 	return (
@@ -262,14 +280,18 @@ function App() {
 					</div>
 					<div className={s['app__startGame']}>
 						<button onClick={() => {
-							if(win || loss) {
+							if(isWin || loss) {
 								setHasGameStarted(false);
+								setEmojiStatus('happy');
+								onResetGame();
+								return;
+							} else if(hasGameStarted) {
+								setHasGameStarted(false);
+								onResetGame();
 								return;
 							}
-							setHasGameStarted(prev => !prev);
-							if(hasGameStarted) {
-								onResetGame();
-							}
+
+							setHasGameStarted(true);
 						}}>
 							{displayEmoji()}
 						</button>
@@ -291,12 +313,14 @@ function App() {
 										key={x} 
 										className={s['cell']}
 										onClick={() => handleClick(x, y)}
-										onMouseDown={() => {setEmojiStatus('scared')}}
-										onMouseUp={() => {
-											if(win || loss) {
+										onMouseDown={() => {
+											if(isWin || loss || !hasGameStarted) {
 												return;
 											}
-											setEmojiStatus(() => loss ? 'sad' : win ? 'win' : 'happy');
+											setEmojiStatus('scared');
+										}}
+										onMouseUp={() => {
+											setEmojiStatus(() => loss ? 'sad' : isWin ? 'win' : 'happy');
 										}}
 										onContextMenu={(e) => {
 											e.preventDefault(); 
