@@ -194,23 +194,23 @@ function App() {
 			return;
 		}
 		if (mask[index] === Mask.Fill) {
-			if (field[y * size * x] === BOMB) {
-				setMinesLeft(prev => prev - 1);
+			if(minesLeft === 0) {
+				alert('Вы израсходовали все флажки!');
+				return;
 			}
+			setMinesLeft(prev => prev - 1);
 			setMask(prev => {
 				const newMask = [...prev];
 				newMask[y * size + x] = Mask.Flag;
 				return newMask;
 			});
 		} else if(mask[index] === Mask.Flag) {
+			setMinesLeft(prev => prev + 1);
 			setMask(prev => {
 				const newMask = [...prev];
 				newMask[y * size + x] = Mask.Question;
 				return newMask;
 			});
-			if (field[y * size * x] === BOMB) {
-				setMinesLeft(prev => prev + 1);
-			}
 		} else if(mask[index] === Mask.Question) {
 			setMask(prev => {
 				const newMask = [...prev];
